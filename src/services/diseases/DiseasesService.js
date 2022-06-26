@@ -1,5 +1,6 @@
 import {api} from '../../api'
 
 export const DiseasesService = {
-    diseasesWithCities: () => api.get("/diseases/cities")
+    diseases: () => api.get('/diseases'),
+    diseasesWithCities: () => api.get("/diseases/cities"),
 }

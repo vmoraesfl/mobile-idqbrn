@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
 import {
     View,
@@ -8,20 +7,19 @@ import {
     Platform,
     FlatList,
     TouchableOpacity,
-    Image,
     ActivityIndicator,
     Modal,
     Pressable,
-    Button,
 } from "react-native";
 
-import MapView, {Circle, Heatmap, Marker} from "react-native-maps";
+import MapView, {Circle, Marker} from "react-native-maps";
 import * as Location from 'expo-location';
 
 import {DiseasesService} from "../services";
 
 export default function Home() {
   const [markers, setMarkers] = useState([]);
+  const [diseasesWithCities, setDiseasesWithCities] = useState([]);
   const [diseases, setDiseases] = useState([]);
   const [filter, setFilter] = useState("");
   const [selectedDisease, setSelectedDisease] = useState({});
@@ -29,157 +27,6 @@ export default function Home() {
 
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-
-  const navigation = useNavigation();
-  const diseasesList = [
-    {
-        "id": 1,
-        "nome": "BOTULISMO",
-        "prevencao": "n sei",
-        "tratamento": "torce",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 2,
-        "nome": "LEISHMANIOSE VISCERAL",
-        "prevencao": "mata rato",
-        "tratamento": "fée",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 3,
-        "nome": "LEISHMANIOSE TEGUMENTAR",
-        "prevencao": "mata rato tbm",
-        "tratamento": "fé",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 4,
-        "nome": "FEBRE AMARELA",
-        "prevencao": "mata mosquito",
-        "tratamento": "banho gelado",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 5,
-        "nome": "DENGUE",
-        "prevencao": "mata mosquito tbm",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 6,
-        "nome": "HEPATITE VIRAL",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 7,
-        "nome": "FEBRE MACULOSA",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 8,
-        "nome": "LEPTOSPIROSE",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 9,
-        "nome": "DOENÇA DE CHAGAS",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 10,
-        "nome": "PICADAS DE COBRAS",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 11,
-        "nome": "ZIKA VÍRUS",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 12,
-        "nome": "FEBRE TIFÓIDE",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 13,
-        "nome": "HANTAVIROSE",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 14,
-        "nome": "MENINGITE",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    },
-    {
-        "id": 15,
-        "nome": "RAIVA",
-        "prevencao": "",
-        "tratamento": "",
-        "createdAt": "2022-06-25T03:19:41.000Z",
-        "updatedAt": "2022-06-25T03:19:41.000Z"
-    }
-];
-  const data = [
-    {
-        "id": 3,
-        "name": "LEISHMANIOSE TEGUMENTAR",
-        "cities": [
-            {
-                "id": 79,
-                "name": "Águia Branca",
-                "state": "ES",
-                "latitude": -18.9846,
-                "longitude": -40.7437,
-                "cases": {
-                    "id": 78,
-                    "total": 1
-                }
-            }
-        ]
-    },
-    ];
-  /* const filteredData = markers.filter((m) => m.category === filter); */
-
-  let text = 'Waiting..';
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
-  }
 
   useEffect(() => {
       (async () => {
@@ -194,22 +41,20 @@ export default function Home() {
       })();
   }, [])
 
-    const loadDiseases = async () => {
+  const loadDiseasesWithCities = async () => {
         const response = await DiseasesService.diseasesWithCities()
+        setDiseasesWithCities(response.data)
+    }
+
+    const loadDiseases = async () => {
+        const response = await DiseasesService.diseases()
         setDiseases(response.data)
     }
 
   useEffect(() => {
-    setMarkers(data);
+    loadDiseases()
 
-    let text = 'Waiting..';
-    if (errorMsg) {
-    text = errorMsg;
-    } else if (location) {
-    text = JSON.stringify(location);
-    }
-
-    loadDiseases();
+    loadDiseasesWithCities();
   }, []);
 
   if (!location || location.length === 0) {
@@ -230,23 +75,23 @@ export default function Home() {
         initialRegion={{
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
-          //latitude: -15.47,
-          //longitude: -47.54,
           latitudeDelta: 0.922,
           longitudeDelta: 0.421,
         }}
       >
-        {(filter ? filteredData : diseases).map((disease) => {
+        {diseasesWithCities.map((disease) => {
             return disease.cities.map(({name, latitude, longitude, cases}) => (
                 <Circle
                     key={name + "-" + disease.name}
                     center={{latitude, longitude}}
                     radius={20000}
                     fillColor={"#FF39337D"}
-                    strokeColor={"#FF39337D"}/>
+                    strokeColor={"#FF39337D"}
+                />
             ))
         })}
       </MapView>
+
       {modalVisible &&
         <Modal
           animationType="slide"
@@ -280,7 +125,6 @@ export default function Home() {
           </Modal>
 
       }
-
     
       <View style={styles.bottomContainer}>
         <Text style={styles.subTitle}>
@@ -289,7 +133,7 @@ export default function Home() {
       </View>
       <View style={styles.categoryContainer}>
         <FlatList
-          data={diseasesList}
+          data={diseases}
           horizontal
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
@@ -309,7 +153,6 @@ export default function Home() {
               ]}
               key={item.id}
             >
-              {/* <Image style={styles.categoryImage} source={item.image} />*/}
               <Text style={styles.categoryText}>{item.nome}</Text>
             </TouchableOpacity>
           )}
