@@ -9,7 +9,10 @@ import {
     FlatList,
     TouchableOpacity,
     Image,
-    ActivityIndicator, Button,
+    ActivityIndicator,
+    Modal,
+    Pressable,
+    Button,
 } from "react-native";
 
 import MapView, {Circle, Heatmap, Marker} from "react-native-maps";
@@ -21,11 +24,135 @@ export default function Home() {
   const [markers, setMarkers] = useState([]);
   const [diseases, setDiseases] = useState([]);
   const [filter, setFilter] = useState("");
+  const [selectedDisease, setSelectedDisease] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
 
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
   const navigation = useNavigation();
+  const diseasesList = [
+    {
+        "id": 1,
+        "nome": "BOTULISMO",
+        "prevencao": "n sei",
+        "tratamento": "torce",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 2,
+        "nome": "LEISHMANIOSE VISCERAL",
+        "prevencao": "mata rato",
+        "tratamento": "fée",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 3,
+        "nome": "LEISHMANIOSE TEGUMENTAR",
+        "prevencao": "mata rato tbm",
+        "tratamento": "fé",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 4,
+        "nome": "FEBRE AMARELA",
+        "prevencao": "mata mosquito",
+        "tratamento": "banho gelado",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 5,
+        "nome": "DENGUE",
+        "prevencao": "mata mosquito tbm",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 6,
+        "nome": "HEPATITE VIRAL",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 7,
+        "nome": "FEBRE MACULOSA",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 8,
+        "nome": "LEPTOSPIROSE",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 9,
+        "nome": "DOENÇA DE CHAGAS",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 10,
+        "nome": "PICADAS DE COBRAS",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 11,
+        "nome": "ZIKA VÍRUS",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 12,
+        "nome": "FEBRE TIFÓIDE",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 13,
+        "nome": "HANTAVIROSE",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 14,
+        "nome": "MENINGITE",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    },
+    {
+        "id": 15,
+        "nome": "RAIVA",
+        "prevencao": "",
+        "tratamento": "",
+        "createdAt": "2022-06-25T03:19:41.000Z",
+        "updatedAt": "2022-06-25T03:19:41.000Z"
+    }
+];
   const data = [
     {
         "id": 3,
@@ -120,15 +247,49 @@ export default function Home() {
             ))
         })}
       </MapView>
+      {modalVisible &&
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View style={styles.textContainer}>
+                <Text style={styles.title}>{selectedDisease.nome}</Text>
+                <Text style={styles.subTitle}>
+                  PREVENÇÃO
+                </Text>
+                <Text>{selectedDisease.prevencao}</Text>
+                <Text style={styles.subTitle}>
+                  TRATAMENTO
+                </Text>
+                <Text>{selectedDisease.tratamento}</Text>
+              </View>
+              <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.categoryText}>Voltar</Text>
+              </Pressable>
+            </View>
+            </View>
+          </Modal>
+
+      }
+
     
-      <View style={styles.headerContainer}>
+      <View style={styles.bottomContainer}>
         <Text style={styles.subTitle}>
           Saiba como se proteger
         </Text>
       </View>
       <View style={styles.categoryContainer}>
-          <FlatList
-          data={data}
+        <FlatList
+          data={diseasesList}
           horizontal
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
@@ -138,16 +299,18 @@ export default function Home() {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                //setFilter(filter === item.key ? "" : item.key);
+                setFilter(filter === item.id ? "" : item.id);
+                setModalVisible(!modalVisible);
+                setSelectedDisease(item);
               }}
               style={[
                 styles.categoryItem,
-                //filter === item.key ? styles.selectedCategory : null,
+                filter === item.id ? styles.selectedCategory : null,
               ]}
-              key={item.name}
+              key={item.id}
             >
-              {/* <Image style={styles.categoryImage} source={item.image} />
-              <Text style={styles.categoryText}>{item.label}</Text> */}
+              {/* <Image style={styles.categoryImage} source={item.image} />*/}
+              <Text style={styles.categoryText}>{item.nome}</Text>
             </TouchableOpacity>
           )}
         />
@@ -162,8 +325,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   headerContainer: {
-    padding: 20,
+    padding: 15,
     paddingTop: Platform.OS === "android" ? 50 : 0,
+  },
+  bottomContainer: {
+    padding: 5,
+    paddingTop: 15,
+  },
+  textContainer: {
+    alignSelf: 'stretch',
+    padding: 15,
+    margin:5,
+
   },
   title: {
     fontSize: 24,
@@ -201,5 +374,35 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#322153",
+  },
+  centeredView: {
+    flex:1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "#f0f0f5",
+    borderRadius: 20,
+    padding: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  button: {
+    borderRadius: 20,
+    padding: 15,
+    margin:10,
+    elevation: 2
+  },
+  buttonClose: {
+    backgroundColor: "#f0f0f5",
   },
 });
