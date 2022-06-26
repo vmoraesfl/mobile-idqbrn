@@ -16,11 +16,13 @@ import MapView, {Circle, Marker} from "react-native-maps";
 import * as Location from 'expo-location';
 
 import {DiseasesService} from "../services";
+import {MaterialIcons} from "@expo/vector-icons";
 
 export default function Home() {
   const [markers, setMarkers] = useState([]);
-  const [diseasesWithCities, setDiseasesWithCities] = useState([]);
   const [diseases, setDiseases] = useState([]);
+  const [diseasesWithCities, setDiseasesWithCities] = useState([]);
+  const [filteredDiseasesWithCities, setFilteredDiseasesWithCities] = useState([]);
   const [filter, setFilter] = useState("");
   const [selectedDisease, setSelectedDisease] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
@@ -46,16 +48,20 @@ export default function Home() {
         setDiseasesWithCities(response.data)
     }
 
-    const loadDiseases = async () => {
+  const loadDiseases = async () => {
         const response = await DiseasesService.diseases()
         setDiseases(response.data)
     }
 
   useEffect(() => {
-    loadDiseases()
+    loadDiseases();
 
     loadDiseasesWithCities();
   }, []);
+
+  useEffect(() => {
+      setFilteredDiseasesWithCities(diseasesWithCities)
+  }, [diseasesWithCities])
 
   if (!location || location.length === 0) {
     return <ActivityIndicator />;
@@ -68,6 +74,64 @@ export default function Home() {
         <Text style={styles.subTitle}>
           Veja as doenças mais comuns próximas a você
         </Text>
+
+        <FlatList
+            data={diseasesWithCities}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+            contentContainerStyle={{alignItems: "center"}}
+            style={{marginTop: 20}}
+            ListHeaderComponent={() => (
+                <TouchableOpacity
+                    onPress={() => setFilteredDiseasesWithCities(diseasesWithCities)}
+                    style={[
+                        styles.filterButton,
+                        {marginRight: 10},
+                        filteredDiseasesWithCities.length === diseasesWithCities.length ? styles.selectedFilter : {}]}
+                >
+                    { filteredDiseasesWithCities.length === diseasesWithCities.length &&
+                        <MaterialIcons name={"check"} size={12} style color={"#fff"}/>
+                    }
+                    <Text style={filteredDiseasesWithCities.length === diseasesWithCities.length
+                        ? styles.selectedFilter
+                        : {}}
+                    >Todas</Text>
+                </TouchableOpacity>
+            )}
+            renderItem={({item}) => (
+                <TouchableOpacity
+                    onPress={() => {
+                        let newFilter = filteredDiseasesWithCities.length === diseasesWithCities.length
+                            ? []
+                            : [...filteredDiseasesWithCities]
+
+                        if (newFilter.includes(item)) {
+                          newFilter = newFilter.filter(disease => disease.id !== item.id)
+                        } else {
+                          newFilter.push(item)
+                        }
+
+                        setFilteredDiseasesWithCities(newFilter)
+                    }}
+                    style={[
+                        styles.filterButton,
+                        filteredDiseasesWithCities.includes(item) && filteredDiseasesWithCities.length !== diseasesWithCities.length
+                            ? styles.selectedFilter
+                            : {}
+                    ]}
+                    key={item.id}
+                >
+                    { filteredDiseasesWithCities.includes(item) && filteredDiseasesWithCities.length !== diseasesWithCities.length &&
+                        <MaterialIcons name={"check"} size={12} style color={"#fff"}/>
+                    }
+                    <Text style={filteredDiseasesWithCities.includes(item) && filteredDiseasesWithCities.length !== diseasesWithCities.length
+                        ? styles.selectedFilter
+                        : {}}
+                    >{item.name}</Text>
+                </TouchableOpacity>
+            )}
+        />
       </View>
 
       <MapView
@@ -79,8 +143,8 @@ export default function Home() {
           longitudeDelta: 0.421,
         }}
       >
-        {diseasesWithCities.map((disease) => {
-            return disease.cities.map(({name, latitude, longitude, cases}) => (
+        {filteredDiseasesWithCities.map((disease) => {
+            return disease.cities.map(({name, latitude, longitude}) => (
                 <Circle
                     key={name + "-" + disease.name}
                     center={{latitude, longitude}}
@@ -248,4 +312,17 @@ const styles = StyleSheet.create({
   buttonClose: {
     backgroundColor: "#f0f0f5",
   },
+  filterButton: {
+    alignItems: 'center',
+    backgroundColor: "#f0f0f5",
+    borderRadius: 20,
+    display: 'flex',
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+  },
+  selectedFilter: {
+    backgroundColor: "#999",
+    color: "#fff"
+  }
 });
