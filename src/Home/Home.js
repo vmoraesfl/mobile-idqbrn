@@ -75,14 +75,20 @@ export default function Home() {
         initialRegion={{
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
-          latitudeDelta: 0.922,
-          longitudeDelta: 0.421,
+          latitudeDelta: 9.22,
+          longitudeDelta: 4.21,
         }}
       >
+        {location &&
+          <Marker
+            coordinate={location.coords}
+            icon={require("../../assets/man2.png")}
+          ></Marker>
+        }
         {diseasesWithCities.map((disease) => {
-            return disease.cities.map(({name, latitude, longitude, cases}) => (
+            return disease.cities.map(({name, state, latitude, longitude, cases}) => (
                 <Circle
-                    key={name + "-" + disease.name}
+                    key={name + "-" + state + "-" + disease.name}
                     center={{latitude, longitude}}
                     radius={20000}
                     fillColor={"#FF39337D"}
