@@ -1,21 +1,21 @@
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
+    View,
+    Text,
+    StyleSheet,
+    SafeAreaView,
+    Platform,
+    FlatList,
+    TouchableOpacity,
+    Image,
+    ActivityIndicator, Button,
 } from "react-native";
 
-import MapView, { Marker } from "react-native-maps";
+import MapView, {Circle, Heatmap, Marker} from "react-native-maps";
 import * as Location from 'expo-location';
 
-
+import {DiseasesService} from "../services";
 
 export default function Home() {
   const [markers, setMarkers] = useState([]);
@@ -47,9 +47,6 @@ export default function Home() {
     ];
   /* const filteredData = markers.filter((m) => m.category === filter); */
 
-
-  
-
   let text = 'Waiting..';
   if (errorMsg) {
     text = errorMsg;
@@ -58,19 +55,25 @@ export default function Home() {
   }
 
   useEffect(() => {
-    setMarkers(data);
-    setDiseases(data.map(item => {
-    }));
-    (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          setErrorMsg('Permission to access location was denied');
-          return;
-        }
-  
-        let location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
+      (async () => {
+          let { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+              setErrorMsg('Permission to access location was denied');
+              return;
+          }
+
+          let location = await Location.getCurrentPositionAsync({});
+          setLocation(location);
       })();
+  }, [])
+
+    const loadDiseases = async () => {
+        const response = await DiseasesService.diseasesWithCities()
+        setDiseases(response.data)
+    }
+
+  useEffect(() => {
+    setMarkers(data);
 
     let text = 'Waiting..';
     if (errorMsg) {
@@ -79,11 +82,7 @@ export default function Home() {
     text = JSON.stringify(location);
     }
 
-    /* fetch("http://localhost:3000/api/diseases/cities").then(async (request) => {
-      const data = await request.json();
-      
-      
-    }); */
+    loadDiseases();
   }, []);
 
   if (!location || location.length === 0) {
@@ -110,22 +109,17 @@ export default function Home() {
           longitudeDelta: 0.421,
         }}
       >
-        {(filter ? filteredData : markers).map((item) => {
-          return (
-            <Marker
-              key={item.id}
-              coordinate={{
-                latitude: item.cities[0].latitude,
-                longitude: item.cities[0].longitude,
-              }}
-              onPress={() => {
-                //navigation.navigate("Detail", item);
-              }}
-            />
-          );
-        })} 
+        {(filter ? filteredData : diseases).map((disease) => {
+            return disease.cities.map(({name, latitude, longitude, cases}) => (
+                <Circle
+                    key={name + "-" + disease.name}
+                    center={{latitude, longitude}}
+                    radius={20000}
+                    fillColor={"#FF39337D"}
+                    strokeColor={"#FF39337D"}/>
+            ))
+        })}
       </MapView>
-
     
       <View style={styles.headerContainer}>
         <Text style={styles.subTitle}>
@@ -133,7 +127,7 @@ export default function Home() {
         </Text>
       </View>
       <View style={styles.categoryContainer}>
-        <FlatList
+          <FlatList
           data={data}
           horizontal
           showsHorizontalScrollIndicator={false}
