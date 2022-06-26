@@ -151,7 +151,7 @@ export default function Home() {
           }
 
         {filteredDiseasesWithCities.map((disease) => {
-            return disease.cities.map(({name, latitude, longitude}) => (
+            return disease.cities.map(({name, state, latitude, longitude}) => (
                 <Circle
                     key={name + "-" + state + "-" + disease.name}
                     center={{latitude, longitude}}
